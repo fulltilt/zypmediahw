@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html ng-app="website">
+<head>
+    <meta charset="utf-8">
+    <title>Joyent Pricing Menu with AngularJS</title>
+    <link href="https://netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css"/>
+
+</head>
+
+<body ng-controller="MainCtrl" ng-cloak>
+
+<div class="container">
+    <div class="row">
+        <div draggable="true" class="col-md-2 column" ng-repeat="category in categories">
+            <div class="header {{category.name}}">
+                <h2>{{category.display}}</h2>
+            </div>
+            <div class="instance clearfix" ng-repeat="instance in instances | filter:{category:category.name}"
+                 ng-click="setCurrentInstance(instance)"
+                 ng-class="{'current-{{category.name}}':isCurrentInstance(instance)}">
+                <div class="left pph">
+                    ${{instance.price}}<br><span>per hour</span>
+                </div>
+                <div class="right">
+                    <ul>
+                        <li ng-mouseenter="setCurrentInstanceFeature('ram')"
+                            ng-mouseleave="setCurrentInstanceFeature(null)"
+                            ng-class="{mute:isMuted('ram')}" class="highlight-animation">
+                            {{instance.ram}} <span>GIB</span></li>
+                        <li ng-mouseenter="setCurrentInstanceFeature('cpu')"
+                            ng-mouseleave="setCurrentInstanceFeature(null)"
+                            ng-class="{mute:isMuted('cpu')}" class="highlight-animation">
+                            {{instance.cpu}} <span>vCPU</span></li>
+                        <li ng-mouseenter="setCurrentInstanceFeature('disk')"
+                            ng-mouseleave="setCurrentInstanceFeature(null)"
+                            ng-class="{mute:isMuted('disk')}" class="highlight-animation">
+                            {{instance.disk}} <span>GB</span></li>
+                        <li ng-mouseenter="setCurrentInstanceFeature('network')"
+                            ng-mouseleave="setCurrentInstanceFeature(null)"
+                            ng-class="{mute:isMuted('network')}" class="highlight-animation">
+                            {{instance.network}} <span>Gbit/s</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0-beta.13/angular.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0-beta.13/angular-animate.js"></script>
+<script src="https://cdn.firebase.com/js/client/2.1.0/firebase.js"></script>
+<script src="https://cdn.firebase.com/libs/angularfire/1.1.1/angularfire.min.js"></script>
+
+<script src="js/app.js"></script>
+
+</body>
+</html>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-2 column">
+            <div class="header {{category.name}}">
+                <h2>{{category.display}}</h2>
+            </div>
+            <div class="instance clearfix">
+                <div class="left pph">${{instance.price}} per hour</div>
+                <div class="right">
+                    <ul>
+                        <li>{{instance.ram}} GIB</li>
+                        <li>{{instance.cpu}} vCPU</li>
+                        <li>{{instance.disk}} GB</li>
+                        <li>{{instance.network}} Gbit/s</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+// Code that handles the drag and drop functionality
+    window.onload = function() {
+        var cols = document.querySelectorAll('.column');
+
+        var dragSrcEl = null;
+
+        function handleDragStart(e) {
+            //this.style.opacity = '0.4';  // this / e.target is the source node.
+
+            dragSrcEl = this;
+
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault(); // Necessary. Allows us to drop.
+            }
+
+            e.dataTransfer.dropEffect = 'move';
+
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            this.classList.add('over'); // this / e.target is the current hover target.
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('over');  // this / e.target is previous target element.
+        }
+
+        function handleDragEnd(e) {
+            // this/e.target is the source node.
+            [].forEach.call(cols, function (col) {
+                col.classList.remove('over');
+            });
+        }
+
+        function handleDrop(e) {
+            // this/e.target is current target element.
+            if (e.stopPropagation) {
+                e.stopPropagation(); // Stops some browsers from redirecting.
+            }
+
+            // Don't do anything if dropping the same column we're dragging.
+            if (dragSrcEl != this) {
+                // Set the source column's HTML to the HTML of the column we dropped on.
+                dragSrcEl.innerHTML = this.innerHTML;
+                this.innerHTML = e.dataTransfer.getData('text/html');
+            }
+
+            return false;
+        }
+
+        [].forEach.call(cols, function(col) {
+            col.addEventListener('dragstart', handleDragStart, false);
+            col.addEventListener('dragenter', handleDragEnter, false);
+            col.addEventListener('dragover', handleDragOver, false);
+            col.addEventListener('dragleave', handleDragLeave, false);
+            col.addEventListener('drop', handleDrop, false);
+            col.addEventListener('dragend', handleDragEnd, false);
+        });
+    };
+</script>
