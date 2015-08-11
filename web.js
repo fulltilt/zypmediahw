@@ -41,5 +41,5 @@ app.get('*', function(req, res) {
 
 // START THE SERVER
 // ====================================
-app.listen(8080);
+app.listen(process.env.PORT || 8080);
 console.log('Magic happens on port 8080');
